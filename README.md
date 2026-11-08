@@ -170,10 +170,10 @@ Constants in `src/`; changing one needs a rebuild.
 
 ## Verify the binary
 
-`bin/rog-slashbar.exe` is committed to the repository and attached to each release. Its SHA-256 for this version (0.2.1) is:
+`bin/rog-slashbar.exe` is committed to the repository and attached to each release. Its SHA-256 for this version (0.2.2) is:
 
 ```
-0f65674069cce16ce4dc4ea6a36724e1cf440b19ed320518ef722a9c77ba9c56
+c5bffebc5d0e0f03efc5afb2d143418faf2deed6e4786a60e4f102d32b8ccd1c
 ```
 
 Check it with `Get-FileHash bin\rog-slashbar.exe -Algorithm SHA256`. You can also build it yourself with `cargo build --release`; the result may not be byte-identical, because the release is built with `--remap-path-prefix` to keep local paths out of the binary.
