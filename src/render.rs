@@ -73,14 +73,17 @@ pub fn render(now: f64, agent: &Value, metrics: &Value, cfg: &Value) -> [f64; N]
         .copied()
         .filter(|(k, _)| left_pct(metrics, k, now).is_some())
         .collect();
-    if avail.is_empty() {
+    if avail.is_empty() && state == State::Idle {
         let mut f = [0.0; N];
         f[0] = 0.15; // alive, but no data yet
         return f;
     }
 
     let pinned = cfg.get("view").and_then(Value::as_str).unwrap_or("five_hour");
-    let key = if let Some(&(k, _)) = avail.iter().find(|(k, _)| *k == pinned) {
+    // No credit data yet (status line not set up): working/waiting still animate on an empty base.
+    let key = if avail.is_empty() {
+        ""
+    } else if let Some(&(k, _)) = avail.iter().find(|(k, _)| *k == pinned) {
         k
     } else {
         let cycle = HOLD_S + INTRO_S;
@@ -112,7 +115,7 @@ pub fn render(now: f64, agent: &Value, metrics: &Value, cfg: &Value) -> [f64; N]
             let x = (1.0 - (2.0 * ph - 1.0).abs()) * (N as f64 - 1.0);
             let mut f = [0.0; N];
             for i in 0..N {
-                f[i] = (base[i] * 0.35).max(unit(1.0 - (i as f64 - x).abs() / 1.3));
+                f[i] = unit(1.0 - (i as f64 - x).abs() / 1.3);
             }
             f
         }
@@ -193,6 +196,19 @@ mod tests {
     }
 
     #[test]
+    fn animations_work_without_metrics() {
+        let w = render(100.0, &json!({"state":"working","ts":99.0}), &json!({}), &json!({}));
+        assert!(w.iter().any(|v| *v > 0.5), "runner visible with no credit data");
+        let mut seen = [false; 2];
+        for t in [100.0, 100.25] {
+            let f = render(t, &json!({"state":"waiting","ts":99.0}), &json!({}), &json!({}));
+            seen[(f[0] > 0.5) as usize] = true;
+            assert!(f.iter().all(|v| *v == f[0]), "whole bar together");
+        }
+        assert!(seen[0] && seen[1], "bar blinks");
+    }
+
+    #[test]
     fn idle_pinned_matches_fill() {
         let f = render(100.0, &json!({"state": "idle", "ts": 0}), &metrics(50.0, 0.0), &json!({"view": "five_hour"}));
         assert_eq!(f, [1.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.0]);
@@ -232,15 +248,23 @@ mod tests {
     }
 
     #[test]
-    fn working_dims_credits_with_bright_runner() {
+    fn working_is_only_a_runner_no_credit_bar() {
         let a = json!({"state": "working", "ts": 100.0});
         let m = metrics(100.0, 0.0);
-        let f = render(100.0, &a, &m, &json!({}));
-        // credits bar (full) is dimmed to 35%; a bright runner sits somewhere on top of it
-        let max = f.iter().cloned().fold(0.0, f64::max);
-        let dim = f.iter().filter(|v| (**v - 0.35).abs() < 1e-9).count();
-        assert!(max > 0.6, "runner should be bright, got {max}");
-        assert!(dim >= N - 3, "rest of the bar should be dim, got {dim} dim segments");
+        let mut left = f64::MAX;
+        let mut right = f64::MIN;
+        for t in 0..400 {
+            let f = render(100.0 + t as f64 * 0.01, &a, &m, &json!({}));
+            let max = f.iter().cloned().fold(0.0, f64::max);
+            assert!(max > 0.5, "runner should be bright, got {max}");
+            // far end of the bar stays dark: nothing but the runner is lit
+            let lit = f.iter().filter(|v| **v > 0.0).count();
+            assert!(lit <= 3, "only the runner is lit, got {lit} segments");
+            let centre = f.iter().enumerate().fold((0, 0.0), |m, (i, v)| if *v > m.1 { (i, *v) } else { m }).0 as f64;
+            left = left.min(centre);
+            right = right.max(centre);
+        }
+        assert!(left <= 1.0 && right >= (N - 2) as f64, "runner covers the whole bar");
     }
 
     #[test]

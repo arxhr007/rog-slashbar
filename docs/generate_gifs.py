@@ -230,7 +230,7 @@ def main():
     # hero: the whole story in one loop
     build("overview", [
         idle(94, 3.0, "Idle", "bar shows your remaining 5-hour credits (94%)"),
-        ("working", 94, 0.3, 4.5, "Prompt running", "credits bar dims, a bright segment runs over it"),
+        ("working", 94, 0.3, 4.5, "Prompt running", "one bright segment sweeps up and down the bar"),
         ("working", 94, 2.0, 3.0, "Burning through credits fast", "the runner speeds up with your usage rate"),
         ("waiting", 94, 0.0, 3.5, "Claude needs your input", "permission prompt or question: the whole bar blinks"),
         idle(93, 2.5, "Done", "back to your remaining credits"),

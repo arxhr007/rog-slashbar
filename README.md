@@ -3,7 +3,7 @@
 Turn the **Slash** light bar on the back of an ASUS ROG Zephyrus G14 into a live dashboard for [Claude Code](https://claude.com/claude-code): see your remaining usage at a glance, know when a prompt is running, and get a blink when Claude is waiting on you.
 
 <p align="center">
-  <img src="docs/overview.gif" alt="Slash strip on the laptop lid: idle shows remaining credits, running shows a dim strip with a bright running segment, needs-input blinks the whole strip" width="640">
+  <img src="docs/overview.gif" alt="Slash strip on the laptop lid: idle shows remaining credits, running shows one bright segment sweeping up and down the strip, needs-input blinks the whole strip" width="640">
 </p>
 
 > The animations in this README are rendered from the project's own renderer (`rog-slashbar frames`) and drawn onto an illustration of the laptop lid. They show the logic, not footage of real hardware.
@@ -15,7 +15,7 @@ Turn the **Slash** light bar on the back of an ASUS ROG Zephyrus G14 into a live
 | Situation | Bar |
 |---|---|
 | **Idle**, or a prompt just finished | Your remaining 5-hour credits, anchored at the bottom-right end of the strip |
-| **Prompt running** | The credits bar dims and one bright segment runs back and forth over it. It runs faster the faster you are using your limit |
+| **Prompt running** | One bright segment runs back and forth along the strip (the credits bar is hidden while it runs). It runs faster the faster you are using your limit |
 | **Claude needs you** (permission prompt, option question, plan approval) | The whole bar blinks until you answer |
 
 ### Remaining credits
@@ -28,7 +28,7 @@ The default view. Full bar means plenty left; the last lit segment is dimmed to 
 
 Triggered by your prompt and by every tool call. The runner's speed follows your burn rate (percent of the 5-hour limit used per minute over the last 10 minutes): about 1.8 s per pass when idle-ish, down to 0.4 s when burning fast.
 
-<p align="center"><img src="docs/running.gif" alt="Dim strip with one bright segment running along it, speeding up" width="520"></p>
+<p align="center"><img src="docs/running.gif" alt="One bright segment running along a dark strip, speeding up" width="520"></p>
 
 ### Claude needs your input
 
