@@ -1,68 +1,163 @@
 # slash-claude
 
-Use the ASUS ROG **Slash** light bar (Zephyrus G14 2024+) as a live Claude Code dashboard.
+Turn the **Slash** light bar on the back of an ASUS ROG Zephyrus G14 into a live dashboard for [Claude Code](https://claude.com/claude-code): see your remaining usage at a glance, know when a prompt is running, and get a blink when Claude is waiting on you.
+
+<p align="center">
+  <img src="docs/overview.gif" alt="Slash bar on the laptop lid: idle shows remaining credits, running shows a dim bar with a bright runner, needs-input blinks the whole bar" width="640">
+</p>
+
+> The animations in this README are rendered from the project's own renderer (`slash-claude frames`) and drawn onto an illustration of a laptop lid. They show the logic, not footage of real hardware; the real bar is a row of white LEDs.
+
+## What the bar tells you
 
 | Situation | Bar |
 |---|---|
-| Idle / prompt finished | Remaining 5-hour credits, filled left to right |
-| Prompt running | Credits bar dimmed, with a bright segment running over it (faster at a higher burn rate) |
-| Claude needs your input (permission prompt, option question, plan approval) | The whole bar blinks |
+| **Idle**, or a prompt just finished | Your remaining 5-hour credits, filled left to right |
+| **Prompt running** | The credits bar dims and a bright segment runs back and forth over it. It runs faster the faster you are using your limit |
+| **Claude needs you** (permission prompt, option question, plan approval) | The whole bar blinks until you answer |
 
-Weekly and context-window bars are available with `slash-claude ctl view 7d|ctx|rotate`.
+### Remaining credits
 
-## How it works
+The default view. Full bar means plenty left; the last lit segment is dimmed to show partial amounts. Under 10% the first segment blinks.
 
-One Windows binary with four subcommands:
+<p align="center"><img src="docs/credits.gif" alt="Bar shrinking from 100% to 6%" width="520"></p>
 
-- `daemon` is the only process that talks to the HID device and renders at about 15 fps. It is started automatically.
-- `hook <state>` is called from Claude Code hooks and records the agent state.
-- `status` is the Claude Code status line command. It reads `rate_limits` and `context_window` from stdin, records usage and burn rate, and prints a line.
-- `ctl status|view|set|stop` controls the daemon.
+### Prompt running
 
-State lives in `~/.claude/slash/*.json`. The hook and status commands only write files, so nothing fights over the HID device.
+Triggered by your prompt and by every tool call. The runner's speed follows your burn rate (percent of the 5-hour limit used per minute over the last 10 minutes): about 1.8 s per pass when idle-ish, down to 0.4 s when burning fast.
 
-The status line data (`rate_limits`) is only present for claude.ai Pro, Max and Ultra plans, and only after the first API response of a session.
+<p align="center"><img src="docs/running.gif" alt="Dim bar with a bright runner, speeding up" width="520"></p>
 
-## Build
+### Claude needs your input
+
+Detected from the `Notification` hook (permission prompts) and from `PreToolUse` for `AskUserQuestion` / `ExitPlanMode`. Claude's "still waiting for your input" nudge about a minute after it finishes is ignored, so the bar stays steady once a prompt is done.
+
+<p align="center"><img src="docs/waiting.gif" alt="Whole bar blinking" width="520"></p>
+
+Other views (weekly limit, context window) are one command away: `slash-claude ctl view 7d`, `ctx`, or `rotate` to cycle all three.
+
+## Quick start
+
+Requirements: Windows, a Slash-equipped ROG laptop, Rust (stable), Claude Code on a claude.ai Pro/Max/Ultra plan (the status line only exposes usage limits for those).
+
+**1. Build**
 
 ```
 cargo build --release
 ```
 
-Copy `target\release\slash-claude.exe` somewhere permanent (a running exe cannot be overwritten, but it can be renamed).
+Copy `target\release\slash-claude.exe` somewhere permanent, for example `C:\Tools\slash-claude\slash-claude.exe`.
 
-## Configure Claude Code
+**2. Close Armoury Crate and G-Helper.** They also write to the bar and will fight the daemon.
 
-Add to `~/.claude/settings.json`. Use forward slashes: Claude Code runs commands through Git Bash, which strips backslashes.
+**3. Wire it into Claude Code.** Add this to `~/.claude/settings.json`, replacing the path. Use forward slashes: Claude Code runs commands through Git Bash, which strips backslashes.
 
 ```json
 {
-  "statusLine": { "type": "command", "command": "C:/path/to/slash-claude.exe status", "refreshInterval": 60 },
+  "statusLine": {
+    "type": "command",
+    "command": "C:/Tools/slash-claude/slash-claude.exe status",
+    "refreshInterval": 60
+  },
   "hooks": {
-    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "C:/path/to/slash-claude.exe hook start",   "timeout": 5 }] }],
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "C:/path/to/slash-claude.exe hook working", "timeout": 5 }] }],
-    "PreToolUse":       [{ "hooks": [{ "type": "command", "command": "C:/path/to/slash-claude.exe hook working", "timeout": 5 }] }],
-    "PostToolUse":      [{ "hooks": [{ "type": "command", "command": "C:/path/to/slash-claude.exe hook working", "timeout": 5 }] }],
-    "Notification":     [{ "hooks": [{ "type": "command", "command": "C:/path/to/slash-claude.exe hook waiting", "timeout": 5 }] }],
-    "Stop":             [{ "hooks": [{ "type": "command", "command": "C:/path/to/slash-claude.exe hook done",    "timeout": 5 }] }],
-    "SessionEnd":       [{ "hooks": [{ "type": "command", "command": "C:/path/to/slash-claude.exe hook ended",   "timeout": 5 }] }]
+    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook start",   "timeout": 5 }] }],
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook working", "timeout": 5 }] }],
+    "PreToolUse":       [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook working", "timeout": 5 }] }],
+    "PostToolUse":      [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook working", "timeout": 5 }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook waiting", "timeout": 5 }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook done",    "timeout": 5 }] }],
+    "SessionEnd":       [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook ended",   "timeout": 5 }] }]
   }
 }
 ```
 
-Restart Claude Code afterwards; hooks are loaded at session start.
+**4. Restart Claude Code** (hooks load at session start) and send a prompt. The daemon starts by itself; there is nothing to launch manually.
 
-## Notes and limits
-
-- Windows only. Close Armoury Crate and G-Helper, which also write to the bar.
-- Tested on a device that shows up as `0B05:19B6` (report ID `0x5D`, usage page `0xFF31`). `0B05:193B` is also tried.
-- The bar protocol is unofficial and reverse-engineered; the byte sequences follow [G-Helper](https://github.com/seerge/g-helper)'s `SlashDevice.cs`. A firmware update could change it.
-- Pressing Esc in Claude Code fires no hook, so "running" expires on its own after 3 minutes.
-- Several simultaneous Claude sessions share one state.
-- Tunables (timeouts, speeds, segment count) are constants in `src/`; changing them needs a rebuild.
-
-## Tests
+Check that it is alive:
 
 ```
-cargo test
+slash-claude ctl status
 ```
+
+## How it works
+
+```
+ Claude Code ──hooks──────────►  slash-claude hook <state>   ─┐
+             ──status line────►  slash-claude status          ├─►  ~/.claude/slash/*.json
+                                                              │          │
+                                          slash-claude ctl ───┘          ▼
+                                                                  slash-claude daemon ──HID──► Slash bar
+                                                                  (renders at ~15 fps)
+```
+
+- `daemon` is the only process that talks to the bar. It is started automatically by any hook or status line call, takes a single-instance lock, and exits when the session ends or after 20 minutes without updates.
+- `hook` and `status` only write small JSON files, so they start instantly and can never fight over the device.
+- The renderer in `src/render.rs` is a pure function of (time, state files) and is covered by unit tests.
+
+### State files (`~/.claude/slash/`)
+
+| File | Written by | Contents |
+|---|---|---|
+| `agent.json` | hooks, `ctl set` | `{"state": "idle\|working\|waiting\|done\|ended", "ts": ...}` |
+| `metrics.json` | status line | 5-hour / weekly / context remaining, burn rate, usage samples |
+| `config.json` | `ctl view` | `{"view": "five_hour\|seven_day\|context\|rotate"}` |
+| `heartbeat`, `daemon.lock`, `daemon.log` | daemon | liveness, single-instance lock, log |
+
+## Commands
+
+```
+slash-claude daemon                       run the renderer (normally started automatically)
+slash-claude hook <state>                 start | working | waiting | done | ended
+slash-claude status                       status line command; reads session JSON on stdin
+slash-claude ctl status                   show daemon, agent state, metrics, view
+slash-claude ctl view rotate|5h|7d|ctx    cycle all views, or pin one (default: 5h)
+slash-claude ctl set <state>              fake an agent state, handy for testing the bar
+slash-claude ctl stop                     daemon exits and turns the bar off
+slash-claude frames <state> <left> <burn> <seconds> [fps] [t0]
+                                          dev tool: dump rendered frames as text
+```
+
+The status line also prints a summary into Claude Code, for example `5h:94% 7d:65% ctx:82% burn:0.3%/m`.
+
+## Tunables
+
+Constants in `src/`; changing one needs a rebuild.
+
+| Setting | Value | Where |
+|---|---|---|
+| Segments | 7 (35 on long bars) | `render.rs` `N` |
+| Frame rate | about 15 fps | `daemon.rs` |
+| "Running" expires after | 180 s | `render.rs` |
+| "Needs input" blink stops after | 90 s | `render.rs` |
+| Burn-rate window | 10 min, at least 60 s of history | `status.rs` |
+| Sweep period | 1.8 s at no burn, 0.4 s at a high rate | `render.rs` |
+| Daemon idle exit | 20 min | `daemon.rs` |
+
+## Troubleshooting
+
+- **Bar stays dark.** Close Armoury Crate and G-Helper, then run `slash-claude ctl set idle` and check `~/.claude/slash/daemon.log` for `connected 0B05:...`.
+- **Hooks never fire.** Check the paths use forward slashes, restart Claude Code, and run `/hooks` to confirm the entries are registered.
+- **Status line shows `5h:n/a`.** Usage data only exists on Pro/Max/Ultra plans and only after the first API response of a session.
+- **Rebuilding says access denied.** A running exe cannot be overwritten, but it can be renamed: rename `slash-claude.exe`, copy the new build in, then stop the old process.
+
+## Limitations
+
+- Windows only, and only tested on a device that shows up as `0B05:19B6` (report ID `0x5D`, usage page `0xFF31`). `0B05:193B` is also tried.
+- The bar protocol is unofficial and reverse-engineered. A firmware update could change it.
+- Pressing Esc in Claude Code fires no hook, so "running" ends on its own after 3 minutes.
+- Several simultaneous Claude sessions share one state; the last event wins.
+
+## Development
+
+```
+cargo test                              unit tests (renderer and hook logic)
+cargo build --release
+pip install pillow
+python docs/generate_gifs.py            regenerate the README animations
+```
+
+`docs/generate_gifs.py` calls `slash-claude frames` for the real frame values and draws them with Pillow. Set `SLASH_CLAUDE_EXE` to use a different binary.
+
+## Acknowledgments
+
+The HID byte sequences follow [G-Helper](https://github.com/seerge/g-helper)'s `SlashDevice.cs`. This project is not affiliated with or endorsed by ASUS or Anthropic.

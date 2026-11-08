@@ -4,10 +4,12 @@
 //!   slash-claude hook <state>    hook handler: start|working|waiting|done|ended
 //!   slash-claude status          status line command (reads session JSON on stdin)
 //!   slash-claude ctl <...>       status | view | set | stop
+//!   slash-claude frames <...>    dev tool: dump rendered frames (used for the README GIFs)
 
 mod bar;
 mod ctl;
 mod daemon;
+mod demo;
 mod hook;
 mod render;
 mod state;
@@ -29,6 +31,12 @@ fn main() {
         }
         Some("ctl") => {
             if let Err(e) = ctl::run(&args[1..]) {
+                eprintln!("{e}");
+                std::process::exit(2);
+            }
+        }
+        Some("frames") => {
+            if let Err(e) = demo::run(&args[1..]) {
                 eprintln!("{e}");
                 std::process::exit(2);
             }
