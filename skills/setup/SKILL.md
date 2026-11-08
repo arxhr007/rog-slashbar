@@ -2,20 +2,15 @@
 name: setup
 description: Configure the Claude Code status line so the ROG Slash light bar can show your remaining usage. Run once after installing the rog-slashbar plugin.
 disable-model-invocation: true
-allowed-tools: Read, Edit, Bash
 ---
 
 Set up the status line for the rog-slashbar plugin. The hooks that drive the bar come with the plugin; the status line is what feeds it your usage limits, and a plugin cannot set that itself.
 
-The plugin installs its program at:
-
-`${CLAUDE_PLUGIN_DATA}/rog-slashbar.exe`
-
-Use that path with forward slashes only (Claude Code runs status line commands through Git Bash, which strips backslashes).
+On every session start the plugin keeps a copy of its program at `~/.claude/slash/rog-slashbar.exe`, inside the user's home directory. That path stays the same when the plugin updates, so the status line should point there. Use the full absolute path with forward slashes only, for example `C:/Users/<name>/.claude/slash/rog-slashbar.exe`: Claude Code runs status line commands through Git Bash, which strips backslashes.
 
 Do these steps in order:
 
-1. **Check the program exists.** If the file is missing, the plugin has not finished installing it. It is downloaded when a session starts. Tell the user to restart Claude Code and run this command again. Stop here.
+1. **Check the program exists** at that path. If it is missing, no session has started since the plugin was installed. Tell the user to restart Claude Code and run this command again. Stop here.
 
 2. **Read the user settings file** `~/.claude/settings.json` (create it as `{}` if it does not exist).
 
@@ -26,7 +21,7 @@ Do these steps in order:
    ```json
    "statusLine": {
      "type": "command",
-     "command": "<path to rog-slashbar.exe> status",
+     "command": "<absolute path to rog-slashbar.exe> status",
      "refreshInterval": 60
    }
    ```
@@ -38,4 +33,4 @@ Do these steps in order:
    - The bar shows remaining 5-hour usage only on claude.ai Pro, Max and Ultra plans, and only after the first reply of a session.
    - Close Armoury Crate and G-Helper, which also write to the bar.
    - Windows with an ASUS ROG laptop that has the Slash light bar is required.
-   - Check the install with: `"<path to rog-slashbar.exe>" ctl status`
+   - Check the install with: `"<absolute path to rog-slashbar.exe>" ctl status`

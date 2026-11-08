@@ -4,7 +4,7 @@
 //!  - PreToolUse for AskUserQuestion / ExitPlanMode  -> "waiting" (Claude is about to ask you)
 //!  - Notification of type idle_prompt / auth_success -> ignored (not a request for input)
 
-use crate::state::{ensure_daemon, now, write_json};
+use crate::state::{ensure_daemon, now, sync_stable_copy, write_json};
 use serde_json::{json, Value};
 use std::io::Read;
 
@@ -51,6 +51,9 @@ pub fn run(args: &[String]) {
     let _ = std::io::stdin().read_to_string(&mut input); // always drain the hook payload
     let payload: Value = serde_json::from_str(&input).unwrap_or(Value::Null);
 
+    if arg == "start" {
+        sync_stable_copy(); // keep the status line's program path stable across plugin updates
+    }
     let Some(state) = decide(arg, &payload) else { return };
     write_json("agent.json", &json!({ "state": state, "ts": now() }));
     if state != "ended" {

@@ -52,11 +52,21 @@ Or from your shell:
 claude plugin install rog-slashbar --marketplace arxhr007/rog-slashbar
 ```
 
-Then restart Claude Code and run `/rog-slashbar:setup` once. The plugin registers the hooks and, on the first session start, downloads the matching release and checks its SHA-256 (see [Verify the binary](#verify-the-binary)). `/rog-slashbar:setup` only adds the status line, which a plugin cannot set itself; it asks before replacing a status line you already have.
+Then restart Claude Code and run `/rog-slashbar:setup` once. The plugin registers the hooks. `/rog-slashbar:setup` adds the status line, which a plugin cannot set itself; it asks before replacing a status line you already have.
 
-Requirements: Windows, a Slash-equipped ROG laptop, Rust (stable), Claude Code on a claude.ai Pro/Max/Ultra plan (the status line only exposes usage limits for those).
+Requirements: Windows, a Slash-equipped ROG laptop, and Claude Code on a claude.ai Pro/Max/Ultra plan (the status line only exposes usage limits for those).
 
-### Manual install
+#### What the plugin runs
+
+- **`bin/rog-slashbar.exe`**, a small Windows program built from this repository's `src/` (about 450 KB). The hooks call it directly. It is the only program the plugin runs.
+- On session start it copies itself to `~/.claude/slash/rog-slashbar.exe`, so the status line command keeps working when the plugin updates.
+- It starts one background process (`rog-slashbar daemon`) that talks to the light bar over USB HID. That process exits after 20 minutes without updates or when the session ends.
+- It reads and writes small JSON files in `~/.claude/slash/`.
+- `/rog-slashbar:setup` edits the `statusLine` entry in `~/.claude/settings.json`, only when you run it, and asks before replacing an existing one.
+
+It makes no network requests. See [Privacy](#privacy).
+
+### Manual install (without the plugin)
 
 **1. Build**
 
@@ -160,19 +170,17 @@ Constants in `src/`; changing one needs a rebuild.
 
 ## Verify the binary
 
-The plugin's `scripts/install.ps1` pins the release version and the SHA-256 of the executable, and deletes any download that does not match. The same hash is in the release notes. To check by hand:
+`bin/rog-slashbar.exe` is committed to the repository and attached to each release. Its SHA-256 for this version (0.2.1) is:
 
-```powershell
-Get-FileHash "$env:USERPROFILE\.claude\plugins\data\<plugin-data-dir>\rog-slashbar.exe" -Algorithm SHA256
-og-slashbar.exe" -Algorithm SHA256
+```
+0f65674069cce16ce4dc4ea6a36724e1cf440b19ed320518ef722a9c77ba9c56
 ```
 
-You can also build it yourself with `cargo build --release`. The result may not be byte-identical to the release, because the release is built with `--remap-path-prefix` to keep local paths out of the binary.
+Check it with `Get-FileHash bin\rog-slashbar.exe -Algorithm SHA256`. You can also build it yourself with `cargo build --release`; the result may not be byte-identical, because the release is built with `--remap-path-prefix` to keep local paths out of the binary.
 
 ## Privacy
 
-- The program runs entirely on your machine and sends nothing anywhere.
-- The only network request is the download of the release executable from this repository's GitHub releases, on the first session start and after a plugin update. It is verified against a pinned SHA-256 before it runs.
+- The program runs entirely on your machine and sends nothing anywhere. It makes **no network requests**.
 - It reads the JSON Claude Code passes to hooks and the status line. It uses only the event name, the tool name, the notification type and message, and your usage numbers (5-hour and weekly limits, context window). It does not store prompts, tool inputs or file contents.
 - State is kept in plain JSON files under `~/.claude/slash/`: the agent state, the latest usage numbers, a view setting, and a small log.
 

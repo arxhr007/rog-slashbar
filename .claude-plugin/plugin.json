@@ -1,8 +1,8 @@
 {
   "name": "rog-slashbar",
   "displayName": "ROG Slashbar",
-  "version": "0.2.0",
-  "description": "Use the ASUS ROG Slash light bar as a live Claude Code dashboard: remaining usage, a running animation, and a blink when Claude needs your input. Windows only.",
+  "version": "0.2.1",
+  "description": "Use the ASUS ROG Slash light bar as a live Claude Code dashboard: remaining usage, a running animation, and a blink when Claude needs your input. Windows only; bundles a small local program and makes no network requests.",
   "author": {
     "name": "arxhr007",
     "url": "https://github.com/arxhr007"
@@ -11,7 +11,16 @@
   "homepage": "https://github.com/arxhr007/rog-slashbar",
   "repository": "https://github.com/arxhr007/rog-slashbar",
   "license": "GPL-3.0-only",
-  "keywords": ["asus", "rog", "zephyrus", "slash", "led", "status-line", "usage", "windows"],
+  "keywords": [
+    "asus",
+    "rog",
+    "zephyrus",
+    "slash",
+    "led",
+    "status-line",
+    "usage",
+    "windows"
+  ],
   "documentationUrl": "https://github.com/arxhr007/rog-slashbar#readme",
   "supportUrl": "https://github.com/arxhr007/rog-slashbar/issues",
   "privacyPolicyUrl": "https://github.com/arxhr007/rog-slashbar#privacy"

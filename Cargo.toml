@@ -1,6 +1,6 @@
 [package]
 name = "rog-slashbar"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 license = "GPL-3.0-only"
 description = "ASUS ROG Slash light bar as a live Claude Code dashboard: agent state, usage limits, burn rate"
