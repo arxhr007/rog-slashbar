@@ -7,7 +7,8 @@ segment at a time, so all 9 lights of a segment always share one brightness.
 
     cargo build --release
     pip install pillow
-    python docs/generate_gifs.py            # writes docs/*.gif
+    python docs/generate_gifs.py            # writes docs/*.gif and the plugin icon
+    python docs/generate_gifs.py icon       # icon only
 
 Set SLASH_CLAUDE_EXE to use a different binary.
 """
@@ -176,10 +177,52 @@ def build(name, scenes):
     print(f"{path.name}: {len(frames)} frames, {path.stat().st_size / 1024:.0f} KiB")
 
 
+def make_icon(path, size=1024):
+    """Square plugin icon: the diagonal strip, bottom-right anchored, about 80% lit."""
+    s = size
+    base = Image.new("RGB", (s, s), (12, 12, 15))
+    d = ImageDraw.Draw(base)
+    for k in range(-s, s, s // 74):  # faint diagonal hatch, like the lid
+        d.line((k, s, k + s, 0), fill=(22, 22, 27), width=max(1, s // 512))
+    x0, y0, x1, y1 = s * 0.185, s * 0.21, s * 0.815, s * 0.79
+    total = N * PER
+    centers = [(x0 + (x1 - x0) * (i + 0.5) / total, y0 + (y1 - y0) * (i + 0.5) / total) for i in range(total)]
+    length, width, tilt = s * 0.058, max(3, int(s * 0.0145)), s * 0.003
+
+    def seg(cx, cy):
+        return ((cx - length / 2, cy + tilt), (cx + length / 2, cy - tilt))
+
+    for cx, cy in centers:
+        d.line(seg(cx, cy), fill=DASH_OFF, width=width)
+    light = Image.new("RGB", (s, s), (0, 0, 0))
+    ld = ImageDraw.Draw(light)
+    vals = [1, 1, 1, 1, 1, 0.55, 0]  # logical segment 0 = bottom-right end
+    for i, (cx, cy) in enumerate(centers):
+        v = vals[N - 1 - i // PER] ** GAMMA
+        if v > 0.01:
+            ld.line(seg(cx, cy), fill=tuple(int(c * v) for c in LIGHT), width=width)
+
+    def boost(im, k):
+        return im.point([min(255, int(i * k)) for i in range(256)] * 3)
+
+    out = ImageChops.add(base, light)
+    for radius, k in ((s * 0.004, 0.7), (s * 0.012, 1.0), (s * 0.034, 1.2)):
+        out = ImageChops.add(out, boost(light.filter(ImageFilter.GaussianBlur(radius)), k))
+    mask = Image.new("L", (s, s), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, s - 1, s - 1), radius=int(s * 0.2), fill=255)
+    out = out.convert("RGBA")
+    out.putalpha(mask)
+    out.save(path, optimize=True)
+    print(f"{Path(path).name}: {s}x{s}, {Path(path).stat().st_size / 1024:.0f} KiB")
+
+
 def main():
     if not os.path.exists(EXE):
         sys.exit(f"binary not found: {EXE} (run `cargo build --release`)")
     OUT.mkdir(exist_ok=True)
+    make_icon(ROOT / ".claude-plugin" / "icon.png")
+    if "icon" in sys.argv[1:]:
+        return
 
     idle = lambda left, secs, t="Idle: credits left", s=None: (
         "idle", left, 0.0, secs, t, s or f"remaining 5-hour credits: {left:.0f}%")

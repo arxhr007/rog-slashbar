@@ -38,9 +38,25 @@ Detected from the `Notification` hook (permission prompts) and from `PreToolUse`
 
 Other views (weekly limit, context window) are one command away: `rog-slashbar ctl view 7d`, `ctx`, or `rotate` to cycle all three.
 
-## Quick start
+## Install
+
+### As a Claude Code plugin (recommended)
+
+```
+/plugin install rog-slashbar --marketplace arxhr007/rog-slashbar
+```
+
+Or from your shell:
+
+```
+claude plugin install rog-slashbar --marketplace arxhr007/rog-slashbar
+```
+
+Then restart Claude Code and run `/rog-slashbar:setup` once. The plugin registers the hooks and, on the first session start, downloads the matching release and checks its SHA-256 (see [Verify the binary](#verify-the-binary)). `/rog-slashbar:setup` only adds the status line, which a plugin cannot set itself; it asks before replacing a status line you already have.
 
 Requirements: Windows, a Slash-equipped ROG laptop, Rust (stable), Claude Code on a claude.ai Pro/Max/Ultra plan (the status line only exposes usage limits for those).
+
+### Manual install
 
 **1. Build**
 
@@ -142,6 +158,24 @@ Constants in `src/`; changing one needs a rebuild.
 - **Status line shows `5h:n/a`.** Usage data only exists on Pro/Max/Ultra plans and only after the first API response of a session.
 - **Rebuilding says access denied.** A running exe cannot be overwritten, but it can be renamed: rename `rog-slashbar.exe`, copy the new build in, then stop the old process.
 
+## Verify the binary
+
+The plugin's `scripts/install.ps1` pins the release version and the SHA-256 of the executable, and deletes any download that does not match. The same hash is in the release notes. To check by hand:
+
+```powershell
+Get-FileHash "$env:USERPROFILE\.claude\plugins\data\<plugin-data-dir>\rog-slashbar.exe" -Algorithm SHA256
+og-slashbar.exe" -Algorithm SHA256
+```
+
+You can also build it yourself with `cargo build --release`. The result may not be byte-identical to the release, because the release is built with `--remap-path-prefix` to keep local paths out of the binary.
+
+## Privacy
+
+- The program runs entirely on your machine and sends nothing anywhere.
+- The only network request is the download of the release executable from this repository's GitHub releases, on the first session start and after a plugin update. It is verified against a pinned SHA-256 before it runs.
+- It reads the JSON Claude Code passes to hooks and the status line. It uses only the event name, the tool name, the notification type and message, and your usage numbers (5-hour and weekly limits, context window). It does not store prompts, tool inputs or file contents.
+- State is kept in plain JSON files under `~/.claude/slash/`: the agent state, the latest usage numbers, a view setting, and a small log.
+
 ## Limitations
 
 - Windows only, and only tested on a device that shows up as `0B05:19B6` (report ID `0x5D`, usage page `0xFF31`). `0B05:193B` is also tried.
@@ -155,7 +189,7 @@ Constants in `src/`; changing one needs a rebuild.
 cargo test                              unit tests (renderer and hook logic)
 cargo build --release
 pip install pillow
-python docs/generate_gifs.py            regenerate the README animations
+python docs/generate_gifs.py            regenerate the README animations and the plugin icon
 ```
 
 `docs/generate_gifs.py` calls `rog-slashbar frames` for the real frame values and draws them with Pillow. Set `SLASH_CLAUDE_EXE` to use a different binary.

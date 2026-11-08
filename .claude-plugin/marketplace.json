@@ -1,0 +1,15 @@
+{
+  "name": "arxhr007-plugins",
+  "description": "Plugins by arxhr007.",
+  "owner": {
+    "name": "arxhr007",
+    "url": "https://github.com/arxhr007"
+  },
+  "plugins": [
+    {
+      "name": "rog-slashbar",
+      "source": "./",
+      "description": "ASUS ROG Slash light bar as a live Claude Code dashboard (Windows)."
+    }
+  ]
+}
