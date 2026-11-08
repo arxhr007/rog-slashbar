@@ -8,13 +8,13 @@ Turn the **Slash** light bar on the back of an ASUS ROG Zephyrus G14 into a live
 
 > The animations in this README are rendered from the project's own renderer (`slash-claude frames`) and drawn onto an illustration of the laptop lid. They show the logic, not footage of real hardware.
 >
-> The Slash is a diagonal strip of 63 small lights, running from the top-left to the bottom-right of the lid. They are grouped into **7 segments of 9**, and the hardware can only set a whole segment at a time, so every effect here works at segment level. The bar fills from the top-left end.
+> The Slash is a diagonal strip of 63 small lights, running from the top-left to the bottom-right of the lid. They are grouped into **7 segments of 9**, and the hardware can only set a whole segment at a time, so every effect here works at segment level. The bar is anchored at the bottom-right end of the strip: as credits are used, the top-left end goes dark first.
 
 ## What the bar tells you
 
 | Situation | Bar |
 |---|---|
-| **Idle**, or a prompt just finished | Your remaining 5-hour credits, filled left to right |
+| **Idle**, or a prompt just finished | Your remaining 5-hour credits, anchored at the bottom-right end of the strip |
 | **Prompt running** | The credits bar dims and one bright segment runs back and forth over it. It runs faster the faster you are using your limit |
 | **Claude needs you** (permission prompt, option question, plan approval) | The whole bar blinks until you answer |
 

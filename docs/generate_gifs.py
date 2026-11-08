@@ -60,7 +60,7 @@ def font(bold, size):
 
 
 def dash_centers():
-    """63 dash centres along the strip's centre line, top-left to bottom-right."""
+    """63 dash centres along the strip's centre line, listed top-left to bottom-right."""
     x0, x1 = (TOP_L + TOP_R) / 2, (BOT_L + BOT_R) / 2
     total = N * PER
     return [(x0 + (x1 - x0) * (i + 0.5) / total, TOP_Y + (BOT_Y - TOP_Y) * (i + 0.5) / total)
@@ -119,7 +119,7 @@ def add_light(base, values):
     big = Image.new("RGB", (W * SS, H * SS), (0, 0, 0))
     d = ImageDraw.Draw(big)
     for i, (cx, cy) in enumerate(dash_centers()):
-        v = values[i // PER]
+        v = values[N - 1 - i // PER]  # segment 0 (first to fill) is the bottom-right end
         if v > 0.01:
             v = v ** GAMMA  # perceived brightness: keeps 35% clearly dimmer than 100%
             d.line(dash_line(cx, cy, SS), fill=tuple(int(c * v) for c in LIGHT), width=int(DASH_W * SS))
