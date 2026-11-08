@@ -1,9 +1,11 @@
 [package]
-name = "slash-claude"
+name = "rog-slashbar"
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
-description = "ASUS ROG Slash bar as a Claude Code dashboard: agent state, usage limits, burn rate"
+license = "GPL-3.0-only"
+description = "ASUS ROG Slash light bar as a live Claude Code dashboard: agent state, usage limits, burn rate"
+repository = "https://github.com/arxhr007/rog-slashbar"
+readme = "README.md"
 
 [dependencies]
 hidapi = "2"

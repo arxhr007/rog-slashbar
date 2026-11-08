@@ -1,10 +1,10 @@
-//! slash-claude: ASUS ROG Slash bar as a Claude Code dashboard.
+//! rog-slashbar: ASUS ROG Slash bar as a Claude Code dashboard.
 //!
-//!   slash-claude daemon          run the renderer (auto-started by hooks / status line)
-//!   slash-claude hook <state>    hook handler: start|working|waiting|done|ended
-//!   slash-claude status          status line command (reads session JSON on stdin)
-//!   slash-claude ctl <...>       status | view | set | stop
-//!   slash-claude frames <...>    dev tool: dump rendered frames (used for the README GIFs)
+//!   rog-slashbar daemon          run the renderer (auto-started by hooks / status line)
+//!   rog-slashbar hook <state>    hook handler: start|working|waiting|done|ended
+//!   rog-slashbar status          status line command (reads session JSON on stdin)
+//!   rog-slashbar ctl <...>       status | view | set | stop
+//!   rog-slashbar frames <...>    dev tool: dump rendered frames (used for the README GIFs)
 
 mod bar;
 mod ctl;
@@ -42,7 +42,7 @@ fn main() {
             }
         }
         _ => {
-            eprintln!("usage: slash-claude daemon | hook <state> | status | ctl <status|view|set|stop>");
+            eprintln!("usage: rog-slashbar daemon | hook <state> | status | ctl <status|view|set|stop>");
             std::process::exit(2);
         }
     }

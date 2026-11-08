@@ -1,6 +1,6 @@
 //! Dev tool: dump rendered frames as text, consumed by docs/generate_gifs.py.
 //!
-//!   slash-claude frames <state> <left_pct> <burn> <seconds> [fps=14] [t0=1000]
+//!   rog-slashbar frames <state> <left_pct> <burn> <seconds> [fps=14] [t0=1000]
 //!
 //! One line per frame: seven brightness values (0..1), left segment first.
 //! Uses the real renderer, so the README animations match the actual behavior.

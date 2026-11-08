@@ -4,10 +4,10 @@ use crate::state::{daemon_alive, ensure_daemon, now, read_json, write_json};
 use serde_json::json;
 
 pub const USAGE: &str = "\
-slash-claude ctl status
-slash-claude ctl view rotate|5h|7d|ctx      rotate every view, or pin one
-slash-claude ctl set working|waiting|done|idle   fake an agent state (testing)
-slash-claude ctl stop                       daemon exits and turns the bar off";
+rog-slashbar ctl status
+rog-slashbar ctl view rotate|5h|7d|ctx      rotate every view, or pin one
+rog-slashbar ctl set working|waiting|done|idle   fake an agent state (testing)
+rog-slashbar ctl stop                       daemon exits and turns the bar off";
 
 fn view_alias(s: &str) -> Option<&'static str> {
     Some(match s {

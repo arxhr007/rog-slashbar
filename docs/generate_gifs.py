@@ -1,6 +1,6 @@
 """Render the README animations.
 
-Frames come from the project's own renderer (`slash-claude frames ...`), so the GIFs show
+Frames come from the project's own renderer (`rog-slashbar frames ...`), so the GIFs show
 exactly what the code does. They are drawn onto an illustration of the laptop lid: a diagonal
 strip of 63 small lights, grouped into 7 segments of 9. The hardware can only set a whole
 segment at a time, so all 9 lights of a segment always share one brightness.
@@ -20,7 +20,7 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
-EXE = os.environ.get("SLASH_CLAUDE_EXE") or str(ROOT / "target" / "release" / "slash-claude.exe")
+EXE = os.environ.get("SLASH_CLAUDE_EXE") or str(ROOT / "target" / "release" / "rog-slashbar.exe")
 OUT = ROOT / "docs"
 
 W, H = 760, 640

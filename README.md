@@ -1,4 +1,4 @@
-# slash-claude
+# rog-slashbar
 
 Turn the **Slash** light bar on the back of an ASUS ROG Zephyrus G14 into a live dashboard for [Claude Code](https://claude.com/claude-code): see your remaining usage at a glance, know when a prompt is running, and get a blink when Claude is waiting on you.
 
@@ -6,7 +6,7 @@ Turn the **Slash** light bar on the back of an ASUS ROG Zephyrus G14 into a live
   <img src="docs/overview.gif" alt="Slash strip on the laptop lid: idle shows remaining credits, running shows a dim strip with a bright running segment, needs-input blinks the whole strip" width="640">
 </p>
 
-> The animations in this README are rendered from the project's own renderer (`slash-claude frames`) and drawn onto an illustration of the laptop lid. They show the logic, not footage of real hardware.
+> The animations in this README are rendered from the project's own renderer (`rog-slashbar frames`) and drawn onto an illustration of the laptop lid. They show the logic, not footage of real hardware.
 >
 > The Slash is a diagonal strip of 63 small lights, running from the top-left to the bottom-right of the lid. They are grouped into **7 segments of 9**, and the hardware can only set a whole segment at a time, so every effect here works at segment level. The bar is anchored at the bottom-right end of the strip: as credits are used, the top-left end goes dark first.
 
@@ -36,7 +36,7 @@ Detected from the `Notification` hook (permission prompts) and from `PreToolUse`
 
 <p align="center"><img src="docs/waiting.gif" alt="Whole strip blinking" width="520"></p>
 
-Other views (weekly limit, context window) are one command away: `slash-claude ctl view 7d`, `ctx`, or `rotate` to cycle all three.
+Other views (weekly limit, context window) are one command away: `rog-slashbar ctl view 7d`, `ctx`, or `rotate` to cycle all three.
 
 ## Quick start
 
@@ -48,7 +48,7 @@ Requirements: Windows, a Slash-equipped ROG laptop, Rust (stable), Claude Code o
 cargo build --release
 ```
 
-Copy `target\release\slash-claude.exe` somewhere permanent, for example `C:\Tools\slash-claude\slash-claude.exe`.
+Copy `target\release\rog-slashbar.exe` somewhere permanent, for example `C:\Tools\rog-slashbar\rog-slashbar.exe`.
 
 **2. Close Armoury Crate and G-Helper.** They also write to the bar and will fight the daemon.
 
@@ -58,17 +58,17 @@ Copy `target\release\slash-claude.exe` somewhere permanent, for example `C:\Tool
 {
   "statusLine": {
     "type": "command",
-    "command": "C:/Tools/slash-claude/slash-claude.exe status",
+    "command": "C:/Tools/rog-slashbar/rog-slashbar.exe status",
     "refreshInterval": 60
   },
   "hooks": {
-    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook start",   "timeout": 5 }] }],
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook working", "timeout": 5 }] }],
-    "PreToolUse":       [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook working", "timeout": 5 }] }],
-    "PostToolUse":      [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook working", "timeout": 5 }] }],
-    "Notification":     [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook waiting", "timeout": 5 }] }],
-    "Stop":             [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook done",    "timeout": 5 }] }],
-    "SessionEnd":       [{ "hooks": [{ "type": "command", "command": "C:/Tools/slash-claude/slash-claude.exe hook ended",   "timeout": 5 }] }]
+    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "C:/Tools/rog-slashbar/rog-slashbar.exe hook start",   "timeout": 5 }] }],
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "C:/Tools/rog-slashbar/rog-slashbar.exe hook working", "timeout": 5 }] }],
+    "PreToolUse":       [{ "hooks": [{ "type": "command", "command": "C:/Tools/rog-slashbar/rog-slashbar.exe hook working", "timeout": 5 }] }],
+    "PostToolUse":      [{ "hooks": [{ "type": "command", "command": "C:/Tools/rog-slashbar/rog-slashbar.exe hook working", "timeout": 5 }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "C:/Tools/rog-slashbar/rog-slashbar.exe hook waiting", "timeout": 5 }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "C:/Tools/rog-slashbar/rog-slashbar.exe hook done",    "timeout": 5 }] }],
+    "SessionEnd":       [{ "hooks": [{ "type": "command", "command": "C:/Tools/rog-slashbar/rog-slashbar.exe hook ended",   "timeout": 5 }] }]
   }
 }
 ```
@@ -78,17 +78,17 @@ Copy `target\release\slash-claude.exe` somewhere permanent, for example `C:\Tool
 Check that it is alive:
 
 ```
-slash-claude ctl status
+rog-slashbar ctl status
 ```
 
 ## How it works
 
 ```
- Claude Code ──hooks──────────►  slash-claude hook <state>   ─┐
-             ──status line────►  slash-claude status          ├─►  ~/.claude/slash/*.json
+ Claude Code ──hooks──────────►  rog-slashbar hook <state>   ─┐
+             ──status line────►  rog-slashbar status          ├─►  ~/.claude/slash/*.json
                                                               │          │
-                                          slash-claude ctl ───┘          ▼
-                                                                  slash-claude daemon ──HID──► Slash bar
+                                          rog-slashbar ctl ───┘          ▼
+                                                                  rog-slashbar daemon ──HID──► Slash bar
                                                                   (renders at ~15 fps)
 ```
 
@@ -108,14 +108,14 @@ slash-claude ctl status
 ## Commands
 
 ```
-slash-claude daemon                       run the renderer (normally started automatically)
-slash-claude hook <state>                 start | working | waiting | done | ended
-slash-claude status                       status line command; reads session JSON on stdin
-slash-claude ctl status                   show daemon, agent state, metrics, view
-slash-claude ctl view rotate|5h|7d|ctx    cycle all views, or pin one (default: 5h)
-slash-claude ctl set <state>              fake an agent state, handy for testing the bar
-slash-claude ctl stop                     daemon exits and turns the bar off
-slash-claude frames <state> <left> <burn> <seconds> [fps] [t0]
+rog-slashbar daemon                       run the renderer (normally started automatically)
+rog-slashbar hook <state>                 start | working | waiting | done | ended
+rog-slashbar status                       status line command; reads session JSON on stdin
+rog-slashbar ctl status                   show daemon, agent state, metrics, view
+rog-slashbar ctl view rotate|5h|7d|ctx    cycle all views, or pin one (default: 5h)
+rog-slashbar ctl set <state>              fake an agent state, handy for testing the bar
+rog-slashbar ctl stop                     daemon exits and turns the bar off
+rog-slashbar frames <state> <left> <burn> <seconds> [fps] [t0]
                                           dev tool: dump rendered frames as text
 ```
 
@@ -137,10 +137,10 @@ Constants in `src/`; changing one needs a rebuild.
 
 ## Troubleshooting
 
-- **Bar stays dark.** Close Armoury Crate and G-Helper, then run `slash-claude ctl set idle` and check `~/.claude/slash/daemon.log` for `connected 0B05:...`.
+- **Bar stays dark.** Close Armoury Crate and G-Helper, then run `rog-slashbar ctl set idle` and check `~/.claude/slash/daemon.log` for `connected 0B05:...`.
 - **Hooks never fire.** Check the paths use forward slashes, restart Claude Code, and run `/hooks` to confirm the entries are registered.
 - **Status line shows `5h:n/a`.** Usage data only exists on Pro/Max/Ultra plans and only after the first API response of a session.
-- **Rebuilding says access denied.** A running exe cannot be overwritten, but it can be renamed: rename `slash-claude.exe`, copy the new build in, then stop the old process.
+- **Rebuilding says access denied.** A running exe cannot be overwritten, but it can be renamed: rename `rog-slashbar.exe`, copy the new build in, then stop the old process.
 
 ## Limitations
 
@@ -158,12 +158,14 @@ pip install pillow
 python docs/generate_gifs.py            regenerate the README animations
 ```
 
-`docs/generate_gifs.py` calls `slash-claude frames` for the real frame values and draws them with Pillow. Set `SLASH_CLAUDE_EXE` to use a different binary.
+`docs/generate_gifs.py` calls `rog-slashbar frames` for the real frame values and draws them with Pillow. Set `SLASH_CLAUDE_EXE` to use a different binary.
 
 ## Acknowledgments
 
-The HID byte sequences follow [G-Helper](https://github.com/seerge/g-helper)'s `SlashDevice.cs`. This project is not affiliated with or endorsed by ASUS or Anthropic.
+The HID byte sequences follow [G-Helper](https://github.com/seerge/g-helper)'s `SlashDevice.cs` (GPL-3.0). This project is not affiliated with or endorsed by ASUS or Anthropic. "ROG" and "Republic of Gamers" are trademarks of ASUSTeK Computer Inc.
 
 ## License
 
-[MIT](LICENSE)
+GPL-3.0-only. See [LICENSE](LICENSE).
+
+The HID commands this project sends were worked out with reference to [G-Helper](https://github.com/seerge/g-helper), which is also GPL-3.0.
