@@ -3,36 +3,38 @@
 Turn the **Slash** light bar on the back of an ASUS ROG Zephyrus G14 into a live dashboard for [Claude Code](https://claude.com/claude-code): see your remaining usage at a glance, know when a prompt is running, and get a blink when Claude is waiting on you.
 
 <p align="center">
-  <img src="docs/overview.gif" alt="Slash bar on the laptop lid: idle shows remaining credits, running shows a dim bar with a bright runner, needs-input blinks the whole bar" width="640">
+  <img src="docs/overview.gif" alt="Slash strip on the laptop lid: idle shows remaining credits, running shows a dim strip with a bright running segment, needs-input blinks the whole strip" width="640">
 </p>
 
-> The animations in this README are rendered from the project's own renderer (`slash-claude frames`) and drawn onto an illustration of a laptop lid. They show the logic, not footage of real hardware; the real bar is a row of white LEDs.
+> The animations in this README are rendered from the project's own renderer (`slash-claude frames`) and drawn onto an illustration of the laptop lid. They show the logic, not footage of real hardware.
+>
+> The Slash is a diagonal strip of 63 small lights, running from the top-left to the bottom-right of the lid. They are grouped into **7 segments of 9**, and the hardware can only set a whole segment at a time, so every effect here works at segment level. The bar fills from the top-left end.
 
 ## What the bar tells you
 
 | Situation | Bar |
 |---|---|
 | **Idle**, or a prompt just finished | Your remaining 5-hour credits, filled left to right |
-| **Prompt running** | The credits bar dims and a bright segment runs back and forth over it. It runs faster the faster you are using your limit |
+| **Prompt running** | The credits bar dims and one bright segment runs back and forth over it. It runs faster the faster you are using your limit |
 | **Claude needs you** (permission prompt, option question, plan approval) | The whole bar blinks until you answer |
 
 ### Remaining credits
 
-The default view. Full bar means plenty left; the last lit segment is dimmed to show partial amounts. Under 10% the first segment blinks.
+The default view. Full bar means plenty left; the last lit segment is dimmed to show partial amounts (each of the 7 steps is about 14% of your limit). Under 10% the first segment blinks.
 
-<p align="center"><img src="docs/credits.gif" alt="Bar shrinking from 100% to 6%" width="520"></p>
+<p align="center"><img src="docs/credits.gif" alt="Strip shrinking from 100% to 6%, one 9-light segment at a time" width="520"></p>
 
 ### Prompt running
 
 Triggered by your prompt and by every tool call. The runner's speed follows your burn rate (percent of the 5-hour limit used per minute over the last 10 minutes): about 1.8 s per pass when idle-ish, down to 0.4 s when burning fast.
 
-<p align="center"><img src="docs/running.gif" alt="Dim bar with a bright runner, speeding up" width="520"></p>
+<p align="center"><img src="docs/running.gif" alt="Dim strip with one bright segment running along it, speeding up" width="520"></p>
 
 ### Claude needs your input
 
 Detected from the `Notification` hook (permission prompts) and from `PreToolUse` for `AskUserQuestion` / `ExitPlanMode`. Claude's "still waiting for your input" nudge about a minute after it finishes is ignored, so the bar stays steady once a prompt is done.
 
-<p align="center"><img src="docs/waiting.gif" alt="Whole bar blinking" width="520"></p>
+<p align="center"><img src="docs/waiting.gif" alt="Whole strip blinking" width="520"></p>
 
 Other views (weekly limit, context window) are one command away: `slash-claude ctl view 7d`, `ctx`, or `rotate` to cycle all three.
 
