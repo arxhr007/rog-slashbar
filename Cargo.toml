@@ -1,0 +1,15 @@
+[package]
+name = "slash-claude"
+version = "0.1.0"
+edition = "2021"
+description = "ASUS ROG Slash bar as a Claude Code dashboard: agent state, usage limits, burn rate"
+
+[dependencies]
+hidapi = "2"
+serde_json = "1"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
