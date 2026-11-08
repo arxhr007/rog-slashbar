@@ -163,3 +163,7 @@ python docs/generate_gifs.py            regenerate the README animations
 ## Acknowledgments
 
 The HID byte sequences follow [G-Helper](https://github.com/seerge/g-helper)'s `SlashDevice.cs`. This project is not affiliated with or endorsed by ASUS or Anthropic.
+
+## License
+
+[MIT](LICENSE)

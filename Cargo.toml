@@ -2,6 +2,7 @@
 name = "slash-claude"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 description = "ASUS ROG Slash bar as a Claude Code dashboard: agent state, usage limits, burn rate"
 
 [dependencies]
